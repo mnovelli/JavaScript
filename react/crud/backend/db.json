@@ -1,0 +1,24 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Marcos Novelli",
+      "email": "mnovelli.ti@gmail.com"
+    },
+    {
+      "id": 2,
+      "name": "Mauricio Novelli",
+      "email": "mauricio.novelli@htomail.com"
+    },
+    {
+      "name": "Mauro Majunte Novelli",
+      "email": "mauro.m.novelli@gmail.com",
+      "id": 3
+    },
+    {
+      "name": "Valeria de Abreu Novelli",
+      "email": "valeria.a.novelli@gmail.com",
+      "id": 4
+    }
+  ]
+}
