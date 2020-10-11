@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='UTF-8'>
+    <title>Acessando Atributos #02</title>
+    <link rel='stylesheet' href='css/estilo.css'>
+</head>
+
+<body class='conteudo exercicio'>
+    <div>
+        <label for="compras">Compras</label>
+        <ul id="compras" destino='escritório' data-urgencia="5">
+            <li>Café</li>
+            <li>Água</li>
+            <li>Copo Descartável</li>
+        </ul>
+    </div>
+    <script>
+        const Lista = document.querySelector('div ul[destino="escritorio"]')
+        Lista.getAttribute('destino')
+        Lista.setAttribute('destino', 'empresa') /* Alterar o Atributo "ESCRITORIO" por "EMPRESA" */ 
+        Lista.setAttribute('status', 'aberto') /* Inserir um Atributo não especificado "STATUS" e "ABERTO" */ 
+        Lista.removeAttribute('destino') /* Remoção de Atributo */ 
+        /* Para Acessar o Atributo Personalizado com "data-urgencia" */ 
+        Lista.dataset.urgencia
+        /* Modidficar o Paremetro de "5" para "4" */ 
+        Lista.dataset.urgencia = 4
+        
+    </script>
+</body>
+
+</html>

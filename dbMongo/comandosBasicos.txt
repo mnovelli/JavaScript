@@ -1,0 +1,244 @@
+Selecionar, Criar um DB:
+use nome DB: use wm
+
+Deletar um DB:
+db.estados.drop() - Neste caso o DB era ESTADOS
+
+Pequisar Bancos de Dados
+show dbs
+
+Pesquisar Coleções:
+show collections
+
+Pesquisar uma Coleção de forma Completa:
+db.estados.find().pretty()
+
+Criar uma Coleção:
+db.createCollection("estados")
+
+Inserir um Estado:
+db.estados.insert({nome: "Acre", sigla: "AC", regiao: "Norte"})
+Acrecentar mais um campo:
+db.estado.save({nome: "Acre", sigla: "AC", regiao: "Norte", populacao: 195522})
+
+
+Desafio Criar Estado e Cidades:
+
+{
+        "_id" : ObjectId("5f7267cb1f57f23cdd7c14ff"),
+        "nome" : "Acre",
+        "sigla" : "AC",
+        "regiao" : "Norte"
+}
+{
+        "_id" : ObjectId("5f7272921f57f23cdd7c1503"),
+        "nome" : "São Paulo",
+        "sigla" : "SP",
+        "regiao" : "Sudeste",
+        "cidades" : [
+                {
+                        "_id" : ObjectId("5f7272921f57f23cdd7c1500"),
+                        "nome" : "Campinas",
+                        "area" : 795.7,
+                        "populacao" : 1081000
+                },
+                {
+                        "_id" : ObjectId("5f7272921f57f23cdd7c1501"),
+                        "nome" : "Guarulhos",
+                        "populacao" : 132500
+                },
+                {
+                        "_id" : ObjectId("5f7272921f57f23cdd7c1502"),
+                        "nome" : "Sorocaba",
+                        "distanciaCapital" : 87,
+                        "populacao" : 644919
+                }
+        ]
+}
+
+Comandos de Consulta:
+db.estados.findOne() - Pesquisa o primeiro registro
+db.estados.findOne({sigla: "SP"}) - Pesquisa Refinada
+db.estados.find({$or: [{sigla: "SP"}, {sigla: "AC"}]}).pretty() - Pesquisa Utilizando comando or(ou)
+db.estados.find({populacao: {$exist: true}}) - Pesquisa os Atributos neste caso POPULACAO dentro de estados
+db.estados.find().skip(1) - Pesquisa por Parametro
+db.estados.find().skip(1).limit(2) - Pesquisa para limitar as quantidade de registros, neste caso (2)registros
+db.estados.count() - Pesquisar quantidade de registros
+db.estados.find({sigla: "SP"}, {nome: 1, sigla: 1}) - Para pesquisar com filtros ex: nome,sigla (1) seguinifica presente neste pesquisar
+db.estados.find({sigla: "SP"}, {nome: 1, sigla: 1, _id: 0}) - Para pesquisar com filtros ex: nome,sigla (1) seguinifica presente neste pesquisar e (0) não presente na pesquisa
+db.estados.find({sigla: "SP"}, {"cidades.nome": 1, _id: 0}) - Pesquisar CIDADES dentro dos estados
+
+CONSULTAS AGREGADAS:
+db.estados.aggregate([
+        { $project: {nome: 1, "cidades.nome": 1, _id: 0} }
+])
+{ "nome" : "Acre" }
+{ "nome" : "São Paulo", "cidades" : [ { "nome" : "Campinas" }, { "nome" : "Guarulhos" }, { "nome" : "Sorocaba" } ] }
+
+db.estados.aggregate([
+        { $project: {populacao: {$sum: "$cidades.populacao"}, sigla: 1, _id: 0} }
+]) - Quando o atributo esta do lado direito obrigatorio simbolo $("$cidades.populacao")
+{ "sigla" : "AC", "populacao" : 0 }
+{ "sigla" : "SP", "populacao" : 1858419 }
+
+db.estados.aggregate([
+        { $project: {populacao: {$sum: "$cidades.populacao"}, sigla: 1, _id: 0} },
+        { $group: {_id: null, populacaoTotal: {$sum: "$populacao" }} }
+]) 
+{ "_id" : null, "populacaoTotal" : 1858419 }
+
+db.estados.aggregate([
+        { $project: {populacao: {$sum: "$cidades.populacao"}, sigla: 1, _id: 0} },
+        { $group: {_id: null, populacaoTotal: {$sum: "$populacao" }} },
+        { $project: {_id: 0, populacaoTotal: 1 } }
+]) - Sem apresentar o _id
+{ "populacaoTotal" : 1858419 }
+
+db.estados.aggregate([
+        { $match: {"cidades.nome": "Sorocaba"} }
+]).pretty() - Pesquisa para trazer os Estados com Cidade(Sorocaba)
+{
+        "_id" : ObjectId("5f7272921f57f23cdd7c1503"),
+        "nome" : "São Paulo",
+        "sigla" : "SP",
+        "regiao" : "Sudeste",
+        "cidades" : [
+                {
+                        "_id" : ObjectId("5f7272921f57f23cdd7c1500"),
+                        "nome" : "Campinas",
+                        "area" : 795.7,
+                        "populacao" : 1081000
+                },
+                {
+                        "_id" : ObjectId("5f7272921f57f23cdd7c1501"),
+                        "nome" : "Guarulhos",
+                        "populacao" : 132500
+                },
+                {
+                        "_id" : ObjectId("5f7272921f57f23cdd7c1502"),
+                        "nome" : "Sorocaba",
+                        "distanciaCapital" : 87,
+                        "populacao" : 644919
+                }
+        ]
+}
+
+db.estados.aggregate([
+        { $match: {"cidades.nome": "Sorocaba"} },
+        { $unwind: "$cidades"}
+]).pretty() Desepacotar a Cidade por Estado
+{
+        "_id" : ObjectId("5f7272921f57f23cdd7c1503"),
+        "nome" : "São Paulo",
+        "sigla" : "SP",
+        "regiao" : "Sudeste",
+        "cidades" : {
+                "_id" : ObjectId("5f7272921f57f23cdd7c1500"),
+                "nome" : "Campinas",
+                "area" : 795.7,
+                "populacao" : 1081000
+        }
+}
+{
+        "_id" : ObjectId("5f7272921f57f23cdd7c1503"),
+        "nome" : "São Paulo",
+        "sigla" : "SP",
+        "regiao" : "Sudeste",
+        "cidades" : {
+                "_id" : ObjectId("5f7272921f57f23cdd7c1501"),
+                "nome" : "Guarulhos",
+                "populacao" : 132500
+        }
+}
+{
+        "_id" : ObjectId("5f7272921f57f23cdd7c1503"),
+        "nome" : "São Paulo",
+        "sigla" : "SP",
+        "regiao" : "Sudeste",
+        "cidades" : {
+                "_id" : ObjectId("5f7272921f57f23cdd7c1502"),
+                "nome" : "Sorocaba",
+                "distanciaCapital" : 87,
+                "populacao" : 644919
+        }
+}
+
+db.estados.aggregate([
+        { $match: {"cidades.nome": "Sorocaba"} },
+        { $unwind: "$cidades"},
+        { $match: {"cidades.nome": "Sorocaba"} }
+]).pretty() - Filtro para trazer apenas a cidade de Sorocaba
+{
+        "_id" : ObjectId("5f7272921f57f23cdd7c1503"),
+        "nome" : "São Paulo",
+        "sigla" : "SP",
+        "regiao" : "Sudeste",
+        "cidades" : {
+                "_id" : ObjectId("5f7272921f57f23cdd7c1502"),
+                "nome" : "Sorocaba",
+                "distanciaCapital" : 87,
+                "populacao" : 644919
+        }
+}
+
+db.estados.aggregate([
+        { $match: {"cidades.nome": "Sorocaba"} },
+        { $unwind: "$cidades"},
+        { $match: {"cidades.nome": "Sorocaba"} },
+        { $project: {codigo: "$cidades._id"} }
+]).pretty() - Pesquisar pelo ID
+{
+        "_id" : ObjectId("5f7272921f57f23cdd7c1503"),
+        "codigo" : ObjectId("5f7272921f57f23cdd7c1502")
+}
+
+Fazendo UPDATE:
+
+db.estados.update({sigla: "SP"},{$set: {populacao: 45340000}}) - Utilizar o comando SET apenas para acrescentar quando existir
+
+db.estados.update({sigla: "AC"},{$set: {cidades: [{nome: "Rio Branco"}]}})  
+
+db.estados.update(
+        {sigla: "SP"},
+        {$push: {cidades: {nome: "Santos", populacao: 433966}}}
+) - Utilizar o comando PUSH apenas para acrescentar quando não existir
+
+Utilizando REMOVE:
+
+db.estados.remove({sigla: "AC"}) - Poderia ser qualquer Estado 
+
+db.estados.remove({populacao: {$exists: false}}, 1) - Operador (1) nesta caso restringi apenas para um registro 
+
+Inserir Empresa:
+
+db.empresas.insert({nome: "Bradesco", estadoId: ObjectId("5b76db6e6aa53vecb73c5ae7")}) - Esse ID é do Estado Referente
+
+db.empresas.insert({nome: "Vale", cidadeId: ObjectId("5b76db6e6aa53vecb73c5ae6")}) - Esse ID é da Cidade
+
+Execultando LOOKUP:
+
+db.empresa.aggregate([
+        {$match: {nome: "Bradesco"}},
+        {$lookup: {
+                from: "estados",
+                LocalField: "estadoId", - Dentro da Empresa
+                foreignField: "_id", - Dentro de Estados
+                as: "estado" - Criado atributo(estado)
+        }},
+        {$unwind: "$estado"},
+]).pretty()
+
+db.empresa.aggregate([
+        {$match: {nome: "Vale"}},
+        {$lookup: {
+                from: "estados",
+                LocalField: "cidadesId", - Dentro da Empresa
+                foreignField: "cidades._id", - Dentro de Estados
+                as: "estado" - Criado atributo(estado)
+        }},
+        {$unwind: "$estado"},
+        {$unwind: "$estado.cidades"},
+]).pretty()
+
+
+
